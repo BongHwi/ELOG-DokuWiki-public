@@ -201,10 +201,11 @@ $isLogEntry = elog_is_log_entry($ID);
 	                <!-- Navigation Buttons (Restricted to Logbook Start Page) -->
 	                <?php if(!$isHelpNs && elog_is_logbook_root() && !empty($INFO['userinfo']) && auth_quickaclcheck($ID) >= AUTH_CREATE): ?>
 	                    <a href="<?php echo wl($ID, 'do=newlog') ?>" class="btn btn-sm btn-primary me-1 py-0">New Log</a>
+	                <?php endif; ?>
+	                <?php if(!$isHelpNs && elog_is_logbook_root() && auth_quickaclcheck($ID) >= AUTH_READ): ?>
 	                    <a href="<?php echo wl($ID, 'do=search') ?>" class="btn btn-sm btn-outline-secondary me-1 py-0">Find</a>
 	                    <a href="<?php echo wl($ID, 'do=photos') ?>" class="btn btn-sm btn-outline-secondary me-1 py-0">Photos</a>
                     <a href="<?php echo wl($ID, 'do=rootplots') ?>" class="btn btn-sm btn-outline-secondary me-1 py-0">ROOT Plots</a>
-
 	                <?php endif; ?>
 
                 <!-- Logbook Manager (Admin & Home only) -->

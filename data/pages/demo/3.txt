@@ -1,0 +1,11 @@
+Type: General
+Category: General
+Tags: demo, root
+Subject: ROOT Upload Example
+RootPlots: qa_hist_example.root:canvas_test
+====== ROOT Upload Example ======
+
+This entry demonstrates ROOT file attachment and interactive plot viewing with JSROOT.
+
+Select the **ROOT Plots** menu on the logbook page to see all ROOT plots across entries.
+

@@ -1,0 +1,8 @@
+Type: General
+Category: General
+Tags: demo, image
+Subject: Image Upload Test
+====== Image Upload Test ======
+
+Please check the photo menu as well!
+

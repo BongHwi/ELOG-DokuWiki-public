@@ -16,13 +16,13 @@ A DokuWiki-based electronic logbook system for physics experiment shift logging.
 - **Docker Deployment** — Single-command setup with Docker Compose
 - **Responsive UI** — Bootstrap 5.3.3 layout, works on desktop and mobile
 
-## Quick Start
+## Quick Start (Docker)
 
 ```bash
 git clone https://github.com/BongHwi/ELOG-DokuWiki.git
 cd ELOG-DokuWiki
-./setup.sh        # Interactive setup: creates config files and admin account
-./start.sh --build
+./start.sh --build   # Build DokuWiki image with ELOG overlay
+./setup.sh           # Create admin account
 # Open http://127.0.0.1:8081
 ```
 
@@ -57,20 +57,18 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 
 ```
 ELOG-DokuWiki/
-├── Dockerfile              # PHP 8.2-Apache image with DokuWiki
-├── docker-compose.yml      # Container orchestration
-├── setup.sh                # Interactive first-time setup
-├── start.sh                # Start containers (with setup guard)
+├── Dockerfile              # Installs DokuWiki + plugins, applies ELOG overlay
+├── docker-compose.yml      # Container orchestration (named volume for conf)
+├── entrypoint.sh           # Ensures data dirs exist, starts Apache
+├── setup.sh                # Interactive setup: admin account + logbook
+├── start.sh                # Start containers
 ├── plugins.conf            # Pinned plugin versions
 ├── install-plugins.sh      # Plugin installer (runs during Docker build)
-├── conf/                   # Configuration (*.dist templates + runtime files)
-│   ├── local.php.dist
-│   ├── users.auth.php.dist
-│   ├── acl.auth.php.dist
-│   ├── plugins.local.php.dist
-│   └── userstyle.css
-├── data/pages/             # Wiki content (flat files)
-├── lib/tpl/elog/           # Custom template (core of the project)
+├── conf/                   # Reference configs for manual (non-Docker) installs
+│   ├── *.dist              # Template files
+│   └── userstyle.css       # Custom stylesheet (copied into image)
+├── data/pages/             # Wiki content (flat files, bind-mounted)
+├── lib/tpl/elog/           # Custom template — core of the project
 │   ├── elog_functions.php
 │   ├── main.php
 │   └── css/

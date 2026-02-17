@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     docker-php-ext-install gd && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Apache rewrite for pretty URLs (/start)
+# Apache rewrite for pretty URLs
 RUN a2enmod rewrite && \
     sed -ri '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride[[:space:]]+None/AllowOverride All/' /etc/apache2/apache2.conf
 
@@ -28,21 +28,44 @@ RUN wget -O dokuwiki.tgz "https://download.dokuwiki.org/src/dokuwiki/dokuwiki-$D
     rm -f install.php && \
     rm dokuwiki.tgz
 
-# Copy plugin installation script and version configuration
+# Install plugins (pinned versions from plugins.conf)
 COPY plugins.conf /tmp/plugins.conf
 COPY install-plugins.sh /tmp/
 RUN chmod +x /tmp/install-plugins.sh && /tmp/install-plugins.sh
 
-# Backup DokuWiki default config files before volume mount hides them
-RUN mkdir -p /docker-defaults/conf && \
-    cp /var/www/html/conf/*.php /var/www/html/conf/*.conf /docker-defaults/conf/ 2>/dev/null; \
-    cp /var/www/html/conf/manifest.json /docker-defaults/conf/ 2>/dev/null; \
-    cp /var/www/html/conf/.htaccess /docker-defaults/conf/ 2>/dev/null; true
+# Install Composer and plugin dependencies (commonmark requires league/commonmark)
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN cd /var/www/html/lib/plugins/commonmark && composer install --no-dev --optimize-autoloader && \
+    rm -f /usr/bin/composer
+
+# Apply ELOG configuration overlay on top of DokuWiki defaults
+RUN { \
+    echo '<?php'; \
+    echo '// ELOG overlay configuration'; \
+    echo "\$conf['title'] = 'E-Log';"; \
+    echo "\$conf['template'] = 'elog';"; \
+    echo "\$conf['useacl'] = 1;"; \
+    echo "\$conf['superuser'] = '@admin';"; \
+    echo "\$conf['defaultgroup'] = 'pending';"; \
+    echo "\$conf['userewrite'] = '1';"; \
+    echo "\$conf['useslash'] = 1;"; \
+    echo "\$conf['uploadsize'] = '52428800';"; \
+    echo "\$conf['savedir'] = '/var/www/html/data';"; \
+    echo "\$conf['openregister'] = '1';"; \
+    echo "\$conf['fulltext_minlen'] = '2';"; \
+    } > /var/www/html/conf/local.php
+
+# Default ACL: @ALL can read, @admin has full access
+RUN printf '*\t\t@ALL\t\t1\n*\t\t@admin\t\t255\n' > /var/www/html/conf/acl.auth.php && \
+    touch /var/www/html/conf/users.auth.php
+
+# Copy custom stylesheet
+COPY conf/userstyle.css /var/www/html/conf/userstyle.css
 
 # Set file permissions
 RUN chown -R www-data:www-data /var/www/html
 
-# Entrypoint restores default configs into mounted volume and starts Apache
+# Entrypoint ensures data directories exist on mounted volume
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

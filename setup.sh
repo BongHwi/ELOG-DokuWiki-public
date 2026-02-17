@@ -6,29 +6,70 @@ echo "  ELOG-DokuWiki Setup"
 echo "============================================"
 echo ""
 
-# --- Step 1: Copy .dist templates to actual config files ---
-copy_dist() {
-  local src="$1"
-  local dst="${src%.dist}"
-  if [ -f "$dst" ]; then
-    echo "  [skip] $(basename "$dst") already exists"
+# Detect if running inside Docker or on host
+CONTAINER_NAME="elog-dokuwiki"
+IN_DOCKER=false
+if [ -f /.dockerenv ]; then
+  IN_DOCKER=true
+fi
+
+# --- Helper: run a PHP command (inside container or locally) ---
+run_php() {
+  if [ "$IN_DOCKER" = true ]; then
+    php -r "$1"
+  elif docker compose ps --status running 2>/dev/null | grep -q "$CONTAINER_NAME"; then
+    docker compose exec -T dokuwiki php -r "$1"
+  elif command -v php &>/dev/null; then
+    php -r "$1"
   else
-    cp "$src" "$dst"
-    echo "  [created] $(basename "$dst")"
+    return 1
   fi
 }
 
-echo "Step 1: Initializing configuration files..."
-copy_dist conf/local.php.dist
-copy_dist conf/acl.auth.php.dist
-copy_dist conf/plugins.local.php.dist
+# --- Step 1: Build and start containers ---
+echo "Step 1: Docker containers"
+
+if [ "$IN_DOCKER" = true ]; then
+  echo "  [skip] Running inside container"
+elif docker compose ps --status running 2>/dev/null | grep -q "$CONTAINER_NAME"; then
+  echo "  [skip] Container already running"
+else
+  read -rp "  Build and start Docker containers? [Y/n]: " do_docker
+  if [[ ! "$do_docker" =~ ^[Nn] ]]; then
+    echo "  Building and starting..."
+    docker compose up -d --build
+    echo "  Waiting for container to be ready..."
+    sleep 3
+  else
+    echo "  Skipped. Run 'docker compose up -d --build' manually."
+    echo ""
+    echo "  For manual (non-Docker) installation:"
+    echo "  1. Install DokuWiki: https://www.dokuwiki.org/install"
+    echo "  2. Copy lib/tpl/elog/ to your DokuWiki's lib/tpl/ directory"
+    echo "  3. Set \$conf['template'] = 'elog'; in conf/local.php"
+    echo "  4. Install plugins listed in plugins.conf"
+    echo ""
+    exit 0
+  fi
+fi
 echo ""
 
 # --- Step 2: Create admin account ---
 echo "Step 2: Admin account setup"
 
-if [ -f "conf/users.auth.php" ]; then
-  echo "  [skip] conf/users.auth.php already exists"
+# Check if admin user already exists
+has_users=false
+if [ "$IN_DOCKER" = true ]; then
+  [ -f /var/www/html/conf/users.auth.php ] && has_users=true
+else
+  existing=$(docker compose exec -T dokuwiki cat /var/www/html/conf/users.auth.php 2>/dev/null || true)
+  if [ -n "$existing" ] && echo "$existing" | grep -qv '^#'; then
+    has_users=true
+  fi
+fi
+
+if [ "$has_users" = true ]; then
+  echo "  [skip] Users already configured"
 else
   while true; do
     read -rp "  Admin username [admin]: " admin_user
@@ -57,7 +98,6 @@ else
     echo "  Invalid email. Colons and newlines are not allowed."
   done
 
-  # Password input
   while true; do
     read -rsp "  Admin password: " admin_pass
     echo ""
@@ -69,39 +109,33 @@ else
     echo "  Passwords do not match. Try again."
   done
 
-  # Generate bcrypt hash with fallback chain (password piped via stdin for safety)
-  hash=""
-  if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
-    echo "  Generating password hash (docker php)..."
-    hash=$(printf '%s' "$admin_pass" | docker run --rm -i php:8.2-cli php -r "echo password_hash(trim(fgets(STDIN)), PASSWORD_BCRYPT);")
-  elif command -v php &>/dev/null; then
-    echo "  Generating password hash (local php)..."
-    hash=$(printf '%s' "$admin_pass" | php -r "echo password_hash(trim(fgets(STDIN)), PASSWORD_BCRYPT);")
-  elif command -v python3 &>/dev/null && python3 -c "import bcrypt" 2>/dev/null; then
-    echo "  Generating password hash (python3 bcrypt)..."
-    hash=$(printf '%s' "$admin_pass" | python3 -c "import sys,bcrypt; print(bcrypt.hashpw(sys.stdin.buffer.read(), bcrypt.gensalt()).decode())")
-  fi
+  # Generate bcrypt hash via container PHP
+  echo "  Generating password hash..."
+  hash=$(printf '%s' "$admin_pass" | run_php "echo password_hash(trim(fgets(STDIN)), PASSWORD_BCRYPT);" 2>/dev/null || true)
 
   if [ -z "$hash" ]; then
-    echo ""
-    echo "  WARNING: No supported tool found to generate bcrypt hashes."
-    echo "  You can generate one manually and paste it below."
-    echo "  Tools: docker run --rm php:8.2-cli php -r \"echo password_hash('PASSWORD', PASSWORD_BCRYPT);\""
-    echo ""
-    read -rp "  Paste bcrypt hash (or press Enter to skip): " hash
+    echo "  WARNING: Could not generate hash. Create admin via DokuWiki web admin instead."
+  else
+    user_line="${admin_user}:${hash}:${admin_name}:${admin_email}:admin,user"
+    if [ "$IN_DOCKER" = true ]; then
+      echo "$user_line" > /var/www/html/conf/users.auth.php
+      chown www-data:www-data /var/www/html/conf/users.auth.php
+    else
+      echo "$user_line" | docker compose exec -T dokuwiki sh -c 'cat > /var/www/html/conf/users.auth.php && chown www-data:www-data /var/www/html/conf/users.auth.php'
+    fi
+    echo "  [created] Admin account '${admin_user}'"
   fi
 
-  if [ -n "$hash" ]; then
-    cat > conf/users.auth.php <<EOF
-# users.auth.php
-# Auto-generated by setup.sh
-${admin_user}:${hash}:${admin_name}:${admin_email}:admin,user
-EOF
-    echo "  [created] conf/users.auth.php with admin account '${admin_user}'"
+  # Set up default ACL
+  acl_content="*               @ALL         1
+*               @admin       255"
+  if [ "$IN_DOCKER" = true ]; then
+    echo "$acl_content" > /var/www/html/conf/acl.auth.php
+    chown www-data:www-data /var/www/html/conf/acl.auth.php
   else
-    cp conf/users.auth.php.dist conf/users.auth.php
-    echo "  [created] conf/users.auth.php (template only — add users manually)"
+    echo "$acl_content" | docker compose exec -T dokuwiki sh -c 'cat > /var/www/html/conf/acl.auth.php && chown www-data:www-data /var/www/html/conf/acl.auth.php'
   fi
+  echo "  [created] Default ACL rules"
 fi
 echo ""
 
@@ -112,7 +146,6 @@ read -rp "  Create an initial logbook? (name, or Enter to skip): " logbook_name
 if [ -n "$logbook_name" ]; then
   if [[ ! "$logbook_name" =~ ^[a-zA-Z0-9_-]+$ ]]; then
     echo "  Invalid logbook name. Use only letters, digits, hyphens, and underscores."
-    echo "  Skipping logbook creation."
     logbook_name=""
   fi
 fi
@@ -129,36 +162,11 @@ if [ -n "$logbook_name" ]; then
 Logbook created on $(date +%Y-%m-%d).
 EOF
     echo "  [created] Logbook '${logbook_name}'"
-
-    # Add ACL entry for the logbook
-    if ! grep -q "^${logbook_name}:" conf/acl.auth.php 2>/dev/null; then
-      cat >> conf/acl.auth.php <<EOF
-
-# Logbook: ${logbook_name}
-${logbook_name}:*   @${logbook_name}  12
-${logbook_name}:*   @admin            255
-EOF
-      echo "  [updated] ACL rules added for '${logbook_name}'"
-    fi
   fi
 fi
 echo ""
 
-# --- Step 4: Build and start (optional) ---
-echo "Step 4: Docker setup"
-read -rp "  Build and start Docker containers now? [y/N]: " do_docker
-
-if [[ "$do_docker" =~ ^[Yy] ]]; then
-  echo "  Building Docker image..."
-  docker compose up -d --build
-  echo ""
-  echo "  ELOG is now running at: http://127.0.0.1:8081"
-else
-  echo "  Skipped. Run './start.sh --build' when ready."
-fi
-
-echo ""
 echo "============================================"
 echo "  Setup complete!"
-echo "  See QUICKSTART.md for next steps."
+echo "  Access ELOG at: http://127.0.0.1:8081"
 echo "============================================"

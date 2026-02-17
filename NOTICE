@@ -67,3 +67,12 @@ Frontend Libraries (bundled in the elog template):
   EasyMDE (Markdown editor)
     License: MIT
     https://github.com/Ionaru/easy-markdown-editor
+
+--------------------------------------------------------------------------------
+
+Demo Content:
+
+  Cat photo (data/media/demo/2_cat.jpg)
+    Photo by huysuzkadraj on Pexels
+    https://www.pexels.com/photo/cat-sitting-on-windowsill-18903447/
+    License: Pexels License (free for personal and commercial use, attribution appreciated)

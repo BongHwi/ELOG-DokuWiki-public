@@ -1,29 +1,19 @@
 #!/bin/bash
 set -e
 
-CONF_DIR="/var/www/html/conf"
 DATA_DIR="/var/www/html/data"
-DEFAULTS_DIR="/docker-defaults/conf"
 
-# --- Restore DokuWiki default config files hidden by volume mount ---
-if [ -d "$DEFAULTS_DIR" ]; then
-  for file in "$DEFAULTS_DIR"/*; do
-    basename="$(basename "$file")"
-    target="${CONF_DIR}/${basename}"
-    if [ ! -f "$target" ]; then
-      cp "$file" "$target"
-      echo "entrypoint: restored default config -> ${basename}"
-    fi
-  done
-fi
-
-# --- Ensure required data subdirectories exist ---
+# Ensure required data subdirectories exist (host bind-mount may be empty)
 for dir in attic cache index locks media media_attic media_meta meta pages tmp log; do
   mkdir -p "${DATA_DIR}/${dir}"
 done
 
-# --- Fix ownership for www-data ---
-chown -R www-data:www-data "$CONF_DIR" "$DATA_DIR"
+# Copy default pages if pages dir is empty (first run)
+if [ ! -f "${DATA_DIR}/pages/start.txt" ] && [ -d "/docker-defaults/pages" ]; then
+  cp -rn /docker-defaults/pages/* "${DATA_DIR}/pages/" 2>/dev/null || true
+fi
 
-# --- Start Apache ---
+# Fix ownership for www-data
+chown -R www-data:www-data "$DATA_DIR"
+
 exec apache2-foreground
