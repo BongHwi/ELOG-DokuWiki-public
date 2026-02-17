@@ -1,0 +1,11 @@
+.git
+data/cache
+data/locks
+data/tmp
+data/index
+data/attic
+data/meta
+*.md
+docs/
+.github/
+.DS_Store

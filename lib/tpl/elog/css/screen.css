@@ -1,0 +1,406 @@
+/* ELOG Styling */
+
+body {
+    font-family: var(--elog-font-body, Verdana, Arial, Helvetica, sans-serif);
+    font-size: 13px;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+}
+
+.elog-header {
+    background-color: #E0E0E0;
+    border-bottom: 2px solid #000000;
+}
+
+.menuFrame {
+    background-color: #C0C0C0;
+    border-bottom: 1px solid #000000;
+}
+
+/* Main Menu Containers */
+.elog_tab_container,
+.elog_user_container,
+.elog_action_container {
+    padding: 3px;
+    font-family: var(--elog-font-body, Verdana, Tahoma, sans-serif);
+    font-size: 13px;
+    white-space: nowrap;
+    background-color: #E0E0E0;
+    /* Match reference menu bar background */
+}
+
+/* Tabs (Home, Logbooks) */
+.elog_tab_container {
+    border-bottom: 2px solid #000000;
+    /* Separator line */
+}
+
+/* Unselected Tab Style */
+.elog_tab_container a.menu {
+    background-color: transparent;
+    color: #0000FF;
+    /* Blue links */
+    text-decoration: none;
+    font-weight: bold;
+    padding: 3px 8px;
+    margin-right: 2px;
+    border: 1px solid transparent;
+}
+
+.elog_tab_container a.menu:hover {
+    text-decoration: underline;
+}
+
+/*
+  screen.css for ELOG-like styling (Bootstrap Version)
+  Most styling is now handled by Bootstrap 5 and the inline styles in main.php.
+  This file keeps some DokuWiki specifics and custom tweaks.
+*/
+
+/* General Link Color to match ELOG green */
+a {
+    color: #40A040;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #008000;
+}
+
+/* DokuWiki Structure Adjustment */
+/* div.dokuwiki {
+    Reset some default DokuWiki margins if needed
+} */
+
+/* Edit Button in Page Actions */
+.secedit {
+    float: right;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+/* Table of Contents */
+div.dokuwiki div.toc {
+    float: right;
+    margin-left: 1.5em;
+    margin-bottom: 1.5em;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 10px;
+    font-size: 0.9em;
+}
+
+div.dokuwiki div.toc header {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Headings (wiki content) */
+.page-content h1,
+.page-content h2,
+.page-content h3,
+.page-content h4,
+.page-content h5,
+.page-content h6 {
+    font-family: var(--elog-font-headings, var(--elog-font-body, Verdana, Arial, Helvetica, sans-serif));
+    color: #202020;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+/* ELOG Specifics that might still be used inside wiki content */
+.elog_separator {
+    border-top: 2px solid #0000AA;
+    margin: 10px 0;
+}
+
+/* Ensure images don't overflow */
+.dokuwiki img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Notifications/Alerts */
+div.success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+}
+
+div.info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+}
+
+div.error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+}
+
+div.notify {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+}
+
+/* ===== Profile / Login / Form Page Styling ===== */
+
+/* Center-align wrapper used by DokuWiki profile page */
+.centeralign {
+    max-width: 540px;
+    margin: 0 auto;
+}
+
+/* Hide the default DokuWiki H1 heading on profile - we use legends instead */
+.centeralign + h1,
+h1#update_your_account_profile {
+    text-align: center;
+    font-size: 1.3rem;
+    color: #486090;
+    margin-bottom: 0.25rem;
+}
+
+/* Intro text */
+.centeralign .level1,
+h1#update_your_account_profile + .level1 {
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+/* Shared fieldset card style */
+#dw__register fieldset,
+#dw__profiletoken fieldset,
+#dw__profiledelete fieldset,
+#dw__login fieldset,
+.doku_form fieldset {
+    max-width: 100%;
+    margin: 0 0 1.5rem 0;
+    padding: 1.5rem 1.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* Legend as section header */
+.doku_form fieldset legend {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #486090;
+    padding: 0 0.5rem;
+    width: auto;
+    float: none;
+}
+
+/* Hide stray <br> tags between labels */
+.doku_form fieldset > br,
+.doku_form fieldset .no > br,
+.doku_form fieldset > div.no > br {
+    display: none;
+}
+
+/* Label blocks */
+.doku_form fieldset label.block {
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.doku_form fieldset label span {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #555;
+}
+
+/* Text / password / email inputs */
+.doku_form fieldset input.edit,
+.doku_form fieldset input[type="text"],
+.doku_form fieldset input[type="password"],
+.doku_form fieldset input[type="email"],
+.doku_form fieldset select {
+    display: block;
+    width: 100%;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    box-sizing: border-box;
+}
+
+.doku_form fieldset input.edit:focus,
+.doku_form fieldset input[type="text"]:focus,
+.doku_form fieldset input[type="password"]:focus,
+.doku_form fieldset input[type="email"]:focus {
+    border-color: #486090;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(72, 96, 144, 0.25);
+}
+
+/* Disabled / readonly fields */
+.doku_form fieldset input[disabled],
+.doku_form fieldset input[readonly] {
+    background-color: #f0f0f0;
+    color: #888;
+    cursor: not-allowed;
+    border-style: dashed;
+}
+
+/* Primary submit buttons */
+.doku_form fieldset button[type="submit"],
+.doku_form fieldset input[type="submit"] {
+    display: inline-block;
+    padding: 0.45rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #fff;
+    background-color: #486090;
+    border: 1px solid #486090;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.doku_form fieldset button[type="submit"]:hover,
+.doku_form fieldset input[type="submit"]:hover {
+    background-color: #3a4f78;
+    border-color: #3a4f78;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* Reset buttons */
+.doku_form fieldset button[type="reset"],
+.doku_form fieldset input[type="reset"] {
+    display: inline-block;
+    padding: 0.45rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6c757d;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+    margin-top: 0.5rem;
+}
+
+.doku_form fieldset button[type="reset"]:hover,
+.doku_form fieldset input[type="reset"]:hover {
+    background-color: #e9ecef;
+}
+
+/* ---- Token section ---- */
+#dw__profiletoken fieldset p {
+    font-size: 0.85rem;
+    color: #6c757d;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+}
+
+#dw__profiletoken fieldset code {
+    display: block;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    color: #495057;
+    word-break: break-all;
+    margin-bottom: 0.75rem;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+#dw__profiletoken button[name="regen"] {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+#dw__profiletoken button[name="regen"]:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+/* ---- Delete account section ---- */
+#dw__profiledelete fieldset {
+    border-color: #f5c6cb;
+    background-color: #fff8f8;
+}
+
+#dw__profiledelete fieldset legend {
+    color: #dc3545;
+}
+
+#dw__profiledelete button[type="submit"] {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+#dw__profiledelete button[type="submit"]:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Checkbox styling */
+.doku_form fieldset input[type="checkbox"] {
+    margin-right: 0.4rem;
+    vertical-align: middle;
+    width: auto;
+}
+
+/* ---- Login form ---- */
+#dw__login fieldset {
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ===== Thread / Reply Styles ===== */
+
+/* Thread indent connector in list view */
+.thread-indent {
+    display: inline-block;
+}
+
+/* Reply count badge */
+.reply-badge {
+    font-size: 0.75em;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+/* Thread context card on entry view */
+.thread-context-card .card-body a {
+    font-weight: 500;
+}
+
+.thread-context-card .card-body .small {
+    line-height: 1.8;
+}

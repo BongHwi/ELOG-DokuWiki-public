@@ -1,0 +1,31 @@
+# Runtime data directories
+data/attic/*
+!data/attic/.gitkeep
+data/cache/
+data/locks/
+data/tmp/
+data/index/
+data/log/*
+!data/log/.gitkeep
+data/meta/*
+!data/meta/.gitkeep
+data/media/*
+!data/media/.gitkeep
+data/media_attic/*
+!data/media_attic/.gitkeep
+data/media_meta/*
+!data/media_meta/.gitkeep
+
+# Config files are managed via conf/.gitignore
+# (only *.dist templates and userstyle.css are tracked)
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

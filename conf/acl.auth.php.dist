@@ -1,0 +1,32 @@
+# acl.auth.php
+# DokuWiki Access Control List
+# Format: namespace  group/user  permission_level
+#
+# Permission levels:
+#   0  = None
+#   1  = Read
+#   2  = Edit
+#   4  = Create
+#   8  = Upload
+#  16  = Delete
+# 255  = Admin (full access)
+#
+# Common combined levels:
+#  12  = Create + Upload
+#  15  = Create + Upload + Delete
+#
+# Copy this file to acl.auth.php, or run ./setup.sh.
+
+# Default: everyone can read, admins have full access
+*               @ALL         1
+*               @admin       255
+
+# Automation accounts (XML-RPC posting)
+*               @automation  15
+
+# Example: restrict a logbook to a specific group
+# mylogbook:*   @mylogbook   12
+# mylogbook:*   @admin       255
+
+# Archive namespace (read-only for everyone)
+archive:*       @ALL         1

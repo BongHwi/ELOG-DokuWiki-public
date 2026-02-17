@@ -1,0 +1,64 @@
+/* E-Log visual overrides */
+:root {
+  --elog-bg: linear-gradient(180deg, #f7f8fa 0%, #eef2f7 100%);
+  --elog-panel: #ffffff;
+  --elog-line: #d8dee9;
+  --elog-title: #0f172a;
+  --elog-text: #1f2a37;
+  --elog-link: #0b5cab;
+  --elog-accent: #e8f1fb;
+}
+
+html,
+body {
+  background: var(--elog-bg);
+  color: var(--elog-text);
+}
+
+#dokuwiki__top .dokuwiki {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+#dokuwiki__header {
+  border-bottom: 2px solid var(--elog-line);
+}
+
+#dokuwiki__site .page,
+#dw__toc {
+  background: var(--elog-panel);
+  border: 1px solid var(--elog-line);
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.05);
+}
+
+#dokuwiki__site h1,
+#dokuwiki__site h2,
+#dokuwiki__site h3 {
+  color: var(--elog-title);
+}
+
+#dokuwiki__site a {
+  color: var(--elog-link);
+}
+
+#dokuwiki__site code,
+#dokuwiki__site pre {
+  background: #f3f6fb;
+  border: 1px solid var(--elog-line);
+}
+
+#dw__search {
+  background: var(--elog-accent);
+  border: 1px solid #c9d9ee;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+@media (max-width: 760px) {
+  #dokuwiki__site .page {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+}

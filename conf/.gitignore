@@ -1,0 +1,5 @@
+# Ignore all runtime conf files; only *.dist templates and userstyle.css are version-controlled
+*
+!.gitignore
+!*.dist
+!userstyle.css

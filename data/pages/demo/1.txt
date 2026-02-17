@@ -1,0 +1,24 @@
+Type: General
+Category: Operation
+Tags: demo, sample
+Subject: Sample Log Entry
+====== Sample Log Entry ======
+
+This is a sample log entry to demonstrate the ELOG format.
+
+===== Details =====
+
+  * **Type**: General
+  * **Category**: Operation
+  * **Tags**: demo, sample
+
+===== Notes =====
+
+Log entries support full DokuWiki syntax including:
+
+  * Text formatting (**bold**, //italic//, __underline__)
+  * Lists (like this one)
+  * Links and images
+  * Code blocks
+  * Tables
+

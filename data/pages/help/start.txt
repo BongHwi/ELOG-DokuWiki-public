@@ -1,0 +1,103 @@
+====== Help ======
+
+This page explains the basics of using the E-Log: how to read and navigate entries, search for past logs, create new entries, manage attachments, and format content.
+
+===== Quick Start =====
+
+  * Select a **Logbook** from the **Logbooks** row.
+  * Open an **Entry** to read.
+  * If you have write access, use **New Log** to create an entry.
+  * Use **Find** to search, and **Photos** to browse attachments.
+
+===== Reading & Navigation =====
+
+  * **Home** takes you to the E-Log front page.
+  * Use the **Logbooks** row to switch between logbooks.
+  * Open entries by clicking their title in the logbook page.
+  * **Index** is available to admins and shows a page index for the current namespace.
+
+Tip: If you want to share a specific place in a page, you can link to a section header using a hash, for example:
+
+  * [[help:start#creating_a_new_entry|Jump to "Creating a New Entry"]]
+
+===== Finding Entries (Find) =====
+
+From a logbook root page, click **Find** to search for entries.
+
+What works well:
+
+  * Search by a unique keyword (run number, detector name, subsystem, error code).
+  * Use short phrases rather than full sentences.
+
+If you do not see **Find**, see [[#getting_access_and_troubleshooting|Getting Access and Troubleshooting]] below.
+
+===== Creating a New Entry =====
+
+To create an entry:
+
+  * Go to the logbook root page
+  * Click **New Log**
+  * Fill in your content and save
+
+Suggested entry template:
+
+  * **Title:** short and specific
+  * **Summary:** 1-3 sentences (what happened, impact)
+  * **Details:** data, steps taken, screenshots, links
+  * **Next actions:** who/what/when
+
+===== Photos & Attachments =====
+
+Use **Photos** to browse media files attached to entries.
+
+You can also embed an uploaded image inside an entry. Common examples:
+
+  * Embed an internal image: {{namespace:image.png}}
+  * Resize to a width: {{namespace:image.png?600}}
+  * Add a caption (tooltip): {{namespace:image.png|Scope screenshot}}
+
+If a file type is not embeddable, it will be shown as a link instead.
+
+===== Formatting Quick Reference =====
+
+Full reference: [[wiki:syntax|Formatting Syntax (DokuWiki)]]
+
+==== Headings ====
+
+  ====== Page title ======
+  ===== Section =====
+  ==== Subsection ====
+
+==== Text ====
+
+  **bold**, //italic//, __underline__, ''monospace''
+
+==== Lists ====
+
+  * Bullet item
+    * Nested bullet
+  - Numbered item
+    - Nested number
+
+==== Links ====
+
+  * Internal: [[some:page|Link text]]
+  * External: [[https://example.org|Example]]
+
+==== Code Blocks ====
+
+Use a code block for commands, logs, or configuration snippets:
+
+<code>
+$ some command --with --flags
+output line 1
+output line 2
+</code>
+
+===== Getting Access and Troubleshooting =====
+
+If you cannot see **New Log**, **Find**, or **Photos**, you probably do not have permission to create entries in that logbook.
+
+  * New accounts typically start in a limited-access group.
+  * Contact an admin to request write access to the relevant logbook.
+

@@ -1,0 +1,11 @@
+services:
+  dokuwiki:
+    build: .
+    container_name: elog-dokuwiki
+    ports:
+      - "127.0.0.1:8081:80"
+    volumes:
+      - ./data:/var/www/html/data
+      - ./conf:/var/www/html/conf
+      - ./lib/tpl/elog:/var/www/html/lib/tpl/elog
+    restart: unless-stopped

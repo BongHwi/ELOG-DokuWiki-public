@@ -1,0 +1,19 @@
+# users.auth.php
+# Format: login:passwordhash:Real Name:email:groups
+#
+# Copy this file to users.auth.php and add your users.
+# Or run ./setup.sh to generate it with an admin account.
+#
+# Password hashes can be generated with:
+#   docker run --rm php:8.2-cli php -r "echo password_hash('YOUR_PASSWORD', PASSWORD_BCRYPT), PHP_EOL;"
+#   php -r "echo password_hash('YOUR_PASSWORD', PASSWORD_BCRYPT), PHP_EOL;"
+#
+# Example user entry:
+# admin:$2y$10$...:Admin User:admin@example.com:admin,user
+#
+# Groups used by default:
+#   admin     - Full administrative access (superuser)
+#   user      - Basic authenticated user
+#   member    - Standard logbook member
+#   pending   - Newly registered users awaiting approval
+#   automation - XML-RPC automation accounts

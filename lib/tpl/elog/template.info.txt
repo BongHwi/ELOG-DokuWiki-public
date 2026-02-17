@@ -1,0 +1,8 @@
+
+base   dokuwiki
+author BongHwi Lim
+email  lim@cns.s.u-tokyo.ac.jp
+date   2025-02-13
+name   elog template
+desc   A DokuWiki template that mimics the ELOG interface
+url    https://github.com/BongHwi/ELOG-DokuWiki

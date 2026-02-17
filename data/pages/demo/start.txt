@@ -1,0 +1,4 @@
+====== Demo Logbook ======
+
+This is a demonstration logbook. Use the **New Log** button to create entries.
+

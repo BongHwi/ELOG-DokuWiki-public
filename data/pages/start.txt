@@ -1,0 +1,14 @@
+====== E-Log ======
+
+Electronic logbook for shift records and experiment operations.
+
+===== Quick Start =====
+
+  * Select a logbook from the list below or the top menu.
+  * Click **New Log** in that logbook to create an entry.
+  * Use **Find** to search entries and **Photos** to browse attachments.
+
+===== Access =====
+
+  * New accounts start in the ''pending'' group.
+  * Contact an admin to get write access.

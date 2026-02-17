@@ -1,0 +1,69 @@
+ELOG-DokuWiki
+Copyright (c) 2025 BongHwi Lim
+
+This project is built on and includes components from the following
+open-source projects:
+
+--------------------------------------------------------------------------------
+
+DokuWiki
+  Copyright (c) Andreas Gohr <andi@splitbrain.org> and contributors
+  License: GPL-2.0
+  https://www.dokuwiki.org/
+
+--------------------------------------------------------------------------------
+
+Plugins (installed via plugins.conf during Docker build):
+
+  blog (dokufreaks/plugin-blog)
+    License: GPL-2.0
+    https://github.com/dokufreaks/plugin-blog
+
+  bloglinks (dokufreaks/plugin-bloglinks)
+    License: GPL-2.0
+    https://github.com/dokufreaks/plugin-bloglinks
+
+  discussion (dokufreaks/plugin-discussion)
+    License: GPL-2.0
+    https://github.com/dokufreaks/plugin-discussion
+
+  commonmark (clockoon/dokuwiki-plugin-commonmark)
+    License: Apache-2.0 / GPL-2.0-or-later (dual licensed)
+    https://github.com/clockoon/dokuwiki-plugin-commonmark
+
+  tag (dokufreaks/plugin-tag)
+    License: GPL-2.0
+    https://github.com/dokufreaks/plugin-tag
+
+  addnewpage (dregad/dokuwiki-plugin-addnewpage)
+    License: GPL-2.0+
+    https://github.com/dregad/dokuwiki-plugin-addnewpage
+
+  move (michitux/dokuwiki-plugin-move)
+    License: GPL-2.0
+    https://github.com/michitux/dokuwiki-plugin-move
+
+  searchindex (splitbrain/dokuwiki-plugin-searchindex)
+    License: GPL-2.0
+    https://github.com/splitbrain/dokuwiki-plugin-searchindex
+
+  captcha (splitbrain/dokuwiki-plugin-captcha)
+    License: GPL-2.0
+    https://github.com/splitbrain/dokuwiki-plugin-captcha
+
+  dw2pdf (splitbrain/dokuwiki-plugin-dw2pdf)
+    License: GPL-2.0
+    https://github.com/splitbrain/dokuwiki-plugin-dw2pdf
+
+--------------------------------------------------------------------------------
+
+Frontend Libraries (bundled in the elog template):
+
+  Bootstrap 5.3.3
+    Copyright (c) Twitter, Inc. and The Bootstrap Authors
+    License: MIT
+    https://getbootstrap.com/
+
+  EasyMDE (Markdown editor)
+    License: MIT
+    https://github.com/Ionaru/easy-markdown-editor

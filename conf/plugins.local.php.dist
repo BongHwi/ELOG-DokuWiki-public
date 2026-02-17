@@ -1,0 +1,7 @@
+<?php
+/*
+ * Plugin enable/disable overrides.
+ * Copy this file to plugins.local.php, or run ./setup.sh.
+ */
+$plugins['captcha'] = 1;
+$plugins['commonmark'] = 0;

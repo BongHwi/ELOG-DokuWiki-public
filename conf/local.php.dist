@@ -1,0 +1,32 @@
+<?php
+/*
+ * DokuWiki Main Configuration - Local Settings
+ * Copy this file to local.php and customize as needed.
+ * Or run ./setup.sh to generate it automatically.
+ */
+
+$conf['title'] = 'E-Log';
+$conf['template'] = 'elog';
+$conf['useacl'] = 1;
+$conf['autopasswd'] = 0;
+$conf['defaultgroup'] = 'pending';
+$conf['superuser'] = '@admin';
+$conf['mailprefix'] = '[E-Log]';
+$conf['userewrite'] = '1';
+$conf['useslash'] = 1;
+$conf['plugin']['captcha']['mode'] = 'text';
+$conf['plugin']['captcha']['loginprotect'] = '0';
+$conf['plugin']['captcha']['regprotect'] = '1';
+$conf['plugin']['captcha']['editprotect'] = '0';
+$conf['tpl']['elog']['googlefont'] = 'Google+Sans+Flex';
+$conf['openregister'] = '1';
+$conf['resendpasswd'] = '1';
+$conf['uploadsize'] = '52428800';
+$conf['fulltext_minlen'] = '2';
+
+// XML-RPC remote interface (optional — uncomment to enable automated posting)
+// $conf['remote'] = 1;
+// $conf['remoteuser'] = 'automation_user';
+
+// Data directory (should match the Docker volume mount point)
+$conf['savedir'] = '/var/www/html/data';
