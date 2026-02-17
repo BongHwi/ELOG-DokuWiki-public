@@ -4,6 +4,8 @@
 
 A DokuWiki-based electronic logbook system for physics experiment shift logging. Built on DokuWiki with a Bootstrap 5 frontend and flat-file storage (no database required).
 
+**Live Demo:** [global-coreen-bonghwi-54a0b2e5.koyeb.app](https://global-coreen-bonghwi-54a0b2e5.koyeb.app/)
+
 ## Features
 
 - **Shift Logging** — Create, edit, and browse log entries with metadata (type, category, tags, author)

@@ -4,6 +4,8 @@
 
 物理実験のシフト記録用DokuWikiベースの電子ログブックシステムです。Bootstrap 5フロントエンドとフラットファイルストレージ（データベース不要）で構築されています。
 
+**ライブデモ:** [global-coreen-bonghwi-54a0b2e5.koyeb.app](https://global-coreen-bonghwi-54a0b2e5.koyeb.app/)
+
 ## 主な機能
 
 - **シフト記録** — メタデータ（タイプ、カテゴリ、タグ、著者）付きのログエントリの作成・編集・閲覧

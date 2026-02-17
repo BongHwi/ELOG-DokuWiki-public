@@ -4,6 +4,8 @@
 
 DokuWiki 기반의 물리 실험 교대근무 기록용 전자 로그북 시스템입니다. Bootstrap 5 프론트엔드와 플랫 파일 저장 방식(데이터베이스 불필요)으로 구축되었습니다.
 
+**라이브 데모:** [global-coreen-bonghwi-54a0b2e5.koyeb.app](https://global-coreen-bonghwi-54a0b2e5.koyeb.app/)
+
 ## 주요 기능
 
 - **교대근무 기록** — 메타데이터(유형, 카테고리, 태그, 작성자)와 함께 로그 항목 작성/편집/열람
