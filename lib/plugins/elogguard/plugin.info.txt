@@ -1,0 +1,7 @@
+base   elogguard
+author BongHwi Lim
+email  lim@cns.s.u-tokyo.ac.jp
+date   2026-11-14
+name   ELOG guard
+desc   Makes the wiki append-only for non-administrators: they may create entries where the ACL grants create rights, but cannot edit, delete or revert existing pages.
+url    https://github.com/BongHwi/ELOG-DokuWiki

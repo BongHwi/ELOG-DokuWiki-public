@@ -8,7 +8,8 @@ A DokuWiki-based electronic logbook system for physics experiment shift logging.
 
 ## Features
 
-- **Shift Logging** — Create, edit, and browse log entries with metadata (type, category, tags, author)
+- **Shift Logging** — Create and browse log entries with metadata (type, category, tags, author)
+- **Append-Only Entries** — Members create entries, replies and attachments; only administrators can edit or delete (`elogguard` plugin)
 - **Logbook Management** — Multiple isolated logbooks with per-group ACL permissions
 - **Image Attachments** — Drag-and-drop image upload with gallery view
 - **Search & Filter** — Full-text search, tag filtering, and pagination
@@ -71,6 +72,7 @@ ELOG-DokuWiki/
 │   └── userstyle.css       # Custom stylesheet (copied into image)
 ├── data/pages/             # Wiki content (flat files, bind-mounted)
 ├── lib/tpl/elog/           # Custom template — core of the project
+├── lib/plugins/elogguard/  # Append-only rule for non-administrators
 │   ├── elog_functions.php
 │   ├── main.php
 │   └── css/

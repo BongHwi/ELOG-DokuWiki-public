@@ -172,7 +172,7 @@ $isLogEntry = elog_is_log_entry($ID);
 
                 <!-- User Info -->
                 <div class="mb-0 small">
-                    Logged in as: <b><?php echo !empty($INFO['userinfo']) ? $INFO['userinfo']['name'] : 'Guest'; ?></b>
+                    Logged in as: <b><?php echo !empty($INFO['userinfo']) ? hsc($INFO['userinfo']['name']) : 'Guest'; ?></b>
                 </div>
             </div>
 	        </div>
@@ -237,6 +237,7 @@ $isLogEntry = elog_is_log_entry($ID);
 
                 <?php if(elog_is_log_entry($ID) && !empty($INFO['userinfo']) && auth_quickaclcheck(getNS($ID).':*') >= AUTH_CREATE): ?>
                     <a href="<?php echo wl($ID, 'do=reply') ?>" class="btn btn-sm btn-outline-primary me-1 py-0">Reply</a>
+                    <a href="<?php echo wl($ID, 'do=attach') ?>" class="btn btn-sm btn-outline-primary me-1 py-0">Add Attachment</a>
                 <?php endif; ?>
 
                 <?php if($INFO['isadmin']): ?>
@@ -290,6 +291,8 @@ $isLogEntry = elog_is_log_entry($ID);
                                 $meta = elog_get_existing_metadata($ns);
                                 $data = elog_get_entry_data($ID);
                                 elog_render_log_form($ns, $meta['categories'], $meta['tags'], 'edit', $data);
+                            } elseif ($ACT == 'attach_form') {
+                                elog_render_attach_form($ID);
                             } elseif ($ACT == 'reply_form') {
                                 $ns = getNS($ID);
                                 $meta = elog_get_existing_metadata($ns);
@@ -303,6 +306,9 @@ $isLogEntry = elog_is_log_entry($ID);
                                     'content' => ''
                                 ];
                                 elog_render_log_form($ns, $meta['categories'], $meta['tags'], 'new', $reply_data);
+                            } elseif (in_array(($_REQUEST['do'] ?? ''), ['photos', 'rootplots'], true) && auth_quickaclcheck(getNS($ID) . ':*') < AUTH_READ) {
+                                // The galleries read the media directory directly, so check read access here.
+                                echo '<div class="alert alert-warning">You do not have permission to view this logbook.</div>';
                             } elseif ($ACT == 'photos' || ($_REQUEST['do'] ?? '') == 'photos') {
                                 echo '<h4 class="mb-3 border-bottom pb-2">Photo Gallery</h4>';
                                 elog_render_gallery(getNS($ID));

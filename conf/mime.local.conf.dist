@@ -1,0 +1,10 @@
+# mime.local.conf
+# Additional upload types for ELOG attachments.
+# The template accepts only images and ROOT files whose extension is known here
+# or in DokuWiki's conf/mime.conf.
+# Copy this file to mime.local.conf (the Docker image does this at build time).
+
+root    !application/octet-stream
+heic    image/heic
+heif    image/heif
+avif    image/avif

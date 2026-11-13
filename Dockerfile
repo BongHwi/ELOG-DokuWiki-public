@@ -62,6 +62,12 @@ RUN printf '*\t\t@ALL\t\t1\n*\t\t@admin\t\t255\n' > /var/www/html/conf/acl.auth.
 # Copy custom stylesheet
 COPY conf/userstyle.css /var/www/html/conf/userstyle.css
 
+# Upload types for ELOG attachments (ROOT files, phone image formats)
+COPY conf/mime.local.conf.dist /var/www/html/conf/mime.local.conf
+
+# ELOG guard plugin: entries are append-only for non-administrators
+COPY lib/plugins/elogguard /var/www/html/lib/plugins/elogguard
+
 # Set file permissions
 RUN chown -R www-data:www-data /var/www/html
 

@@ -35,8 +35,9 @@ The core logic is in the DokuWiki template:
 1. Create a branch for your changes
 2. Make your edits
 3. Test by refreshing the browser (template changes are live via volume mount)
-4. Verify the change works for both admin and regular user roles
-5. Submit a pull request with a description of the change
+4. Run `tests/run-e2e.sh` before you send a change to the posting, editing or upload rules. It builds the image, runs the checks in a throwaway container on a copy of `data/`, and writes `tests/e2e-report.txt`
+5. Verify the change works for both admin and regular user roles
+6. Submit a pull request with a description of the change
 
 ## Reporting Issues
 

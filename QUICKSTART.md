@@ -42,7 +42,8 @@ Open [http://127.0.0.1:8081](http://127.0.0.1:8081) in your browser and log in w
 1. Install DokuWiki: https://www.dokuwiki.org/install
 2. Copy `lib/tpl/elog/` to your DokuWiki's `lib/tpl/` directory
 3. Set `$conf['template'] = 'elog';` in `conf/local.php`
-4. Install the plugins listed in `plugins.conf`
+4. Install the plugins listed in `plugins.conf`, and copy `lib/plugins/elogguard/` to your DokuWiki's `lib/plugins/` directory
+   - Copy `conf/mime.local.conf.dist` to `conf/mime.local.conf` so that ROOT files can be attached
 5. See `conf/*.dist` files for recommended configuration
 
 ## Common Operations

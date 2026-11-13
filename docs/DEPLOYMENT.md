@@ -97,3 +97,12 @@ To enable automated posting via XML-RPC:
 2. Create the automation user in `conf/users.auth.php` with the `automation` group.
 
 3. See [docs/XMLRPC.md](XMLRPC.md) for usage details.
+
+## Upgrading an Existing Installation to the Append-Only Version
+
+- Rebuild the image (`./start.sh --build`). The `elogguard` plugin is part of the image.
+- `conf/` is a named volume, so files added to the image later do not appear in an existing volume. Copy the upload types once:
+  `docker compose cp conf/mime.local.conf.dist dokuwiki:/var/www/html/conf/mime.local.conf`
+  Without this file, ROOT files and HEIC/AVIF images are refused as unknown file types.
+- After the upgrade, users who are not administrators can no longer edit or delete entries. They correct an entry with **Reply** and add files with **Add Attachment**.
+- Attachments are limited to images and `.root` files.
