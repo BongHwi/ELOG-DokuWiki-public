@@ -15,6 +15,12 @@
 #  12  = Create + Upload
 #  15  = Create + Upload + Delete
 #
+#
+# Entries are append-only: with the elogguard plugin, users who are not
+# administrators can create entries and upload attachments where the ACL grants
+# Create/Upload, but they cannot edit or delete existing entries, whatever
+# level they hold. Only administrators (superuser) can.
+#
 # Copy this file to acl.auth.php, or run ./setup.sh.
 
 # Default: everyone can read, admins have full access

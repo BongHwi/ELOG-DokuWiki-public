@@ -813,62 +813,156 @@ function elog_render_thread_context($id) {
  * Get data from an existing log entry
  */
 // Helper functions removed (elog_get_entry_data, etc) as we reverted to creation-only mode.
+
+/**
+ * Whether the current request comes from a logged-in user.
+ */
+function elog_is_logged_in() {
+    global $INPUT;
+    return !blank($INPUT->server->str('REMOTE_USER'));
+}
+
+/**
+ * Whether the current user may post (new entry, reply, attachment upload) in a logbook.
+ * Posting needs a login and create rights in the logbook namespace.
+ * checkSecurityToken() alone is not enough: it always passes for anonymous requests.
+ */
+function elog_can_post($ns) {
+    $ns = cleanID((string)$ns);
+    if ($ns === '') return false;
+    if (!elog_is_logged_in()) return false;
+    return auth_quickaclcheck($ns . ':*') >= AUTH_CREATE;
+}
+
+/**
+ * Whether the current user may change existing entries. Only administrators may.
+ */
+function elog_can_edit_entries() {
+    return elog_is_logged_in() && auth_isadmin();
+}
+
+/**
+ * Short key that marks temporary uploads of the current user (letters and digits only).
+ */
+function elog_temp_user_key() {
+    global $INPUT;
+    return substr(md5((string)$INPUT->server->str('REMOTE_USER')), 0, 10);
+}
+
+/**
+ * Next free entry number in a logbook: highest number ever used + 1.
+ *
+ * Numbers of deleted entries are not reused. Attachments are found by their
+ * "<number>_" file name prefix, so a reused number would show the deleted
+ * entry's files on the new entry. Besides the existing pages this therefore
+ * also looks at the change logs and old revisions (both survive a deletion)
+ * and at attachment files stored by this template.
+ *
+ * Call it while holding the logbook lock (see elog_handle_actions) so that two
+ * simultaneous posts cannot receive the same number.
+ */
+function elog_next_entry_number($ns) {
+    global $conf;
+    $rel = utf8_encodeFN(str_replace(':', '/', $ns));
+    $max_id = 0;
+
+    $sources = array(
+        array($conf['datadir'] . '/' . $rel, '/^(\d+)\.txt$/'),                 // existing entries
+        array($conf['metadir'] . '/' . $rel, '/^(\d+)\.(changes|meta)$/'),      // history, kept after deletion
+        array($conf['olddir'] . '/' . $rel, '/^(\d+)\.\d+\.txt(\.gz|\.bz2)?$/'), // old revisions
+        array($conf['mediadir'] . '/' . $rel, '/^(\d+)_\d{9,}_\d+_/'),          // attachments: <number>_<time>_<index>_<name>
+    );
+    foreach ($sources as $source) {
+        list($dir, $pattern) = $source;
+        if (!is_dir($dir)) continue;
+        foreach (scandir($dir) as $file) {
+            if (preg_match($pattern, $file, $m)) {
+                $val = intval($m[1]);
+                if ($val > $max_id) $max_id = $val;
+            }
+        }
+    }
+    return $max_id + 1;
+}
+
 function elog_handle_actions() {
     global $ID, $conf, $ACT, $INFO;
-    
+
     $do = $_REQUEST['do'] ?? '';
-    
+
     // 1. Show New Log Form
     if ($do == 'newlog') {
+        if (!elog_can_post(getNS($ID))) {
+            msg('Log in with posting rights to create a log entry.', -1);
+            return;
+        }
         if (!defined('ELOG_NEWLOG_MODE')) define('ELOG_NEWLOG_MODE', 1);
         $ACT = 'newlog_form';
         return;
     }
-    
+
     // 1b. Show Reply Form
     if ($do == 'reply' && elog_is_log_entry($ID)) {
-        if (auth_quickaclcheck(getNS($ID) . ':*') < AUTH_CREATE) {
+        if (!elog_can_post(getNS($ID))) {
             return;
         }
         $ACT = 'reply_form';
         return;
     }
 
-    // 2. Intercept Edit for Log Entries
+    // 1c. Show "Add Attachment" form (append-only: files are added, the entry text is not changed)
+    if ($do == 'attach' && elog_is_log_entry($ID) && page_exists($ID)) {
+        if (!elog_can_post(getNS($ID))) {
+            msg('Log in with posting rights to add attachments.', -1);
+            return;
+        }
+        $ACT = 'attach_form';
+        return;
+    }
+
+    // 1d. Save added attachments
+    if ($do == 'attach_save') {
+        $real_id = cleanID(trim($_POST['real_id'] ?? ''));
+        if (empty($real_id) || !elog_is_log_entry($real_id) || !page_exists($real_id)) return;
+        if (!elog_can_post(getNS($real_id))) {
+            msg('Log in with posting rights to add attachments.', -1);
+            return;
+        }
+        if (!checkSecurityToken()) return;
+
+        $stored = elog_handle_image_upload($real_id, noNS($real_id));
+        if ($stored > 0) {
+            msg($stored . ' attachment(s) added.', 1);
+        } else {
+            msg('No attachment was added.', -1);
+        }
+        send_redirect(wl($real_id, '', true, '&'));
+    }
+
+    // 2. Intercept Edit for Log Entries (administrators only)
     if ($do == 'edit' && elog_is_log_entry($ID)) {
-        if (auth_quickaclcheck($ID) < AUTH_EDIT) {
-            return; 
+        if (!elog_can_edit_entries()) {
+            return;
         }
         $ACT = 'edit_form';
         return;
     }
-    
+
     // 3. Save New Log
     if ($do == 'newlog_save') {
-        if (!checkSecurityToken()) return;
-        
         $ns = getNS($ID);
         if (empty($ns)) {
              msg("Error: No namespace selected.", -1);
              return;
         }
-        
-        // Calculate New ID
-        $dir = $conf['datadir'] . '/' . utf8_encodeFN(str_replace(':', '/', $ns));
-        $max_id = 0;
-        if (is_dir($dir)) {
-            $files = scandir($dir);
-            foreach ($files as $file) {
-                if (substr($file, -4) != '.txt') continue;
-                $name = substr($file, 0, -4);
-                if (is_numeric($name)) {
-                    $val = intval($name);
-                    if ($val > $max_id) $max_id = $val;
-                }
-            }
+        if (!elog_can_post($ns)) {
+            msg('Log in with posting rights to create a log entry.', -1);
+            return;
         }
-        $page_id = $ns . ':' . ($max_id + 1);
-        
+        if (!checkSecurityToken()) return;
+
+        // The entry number is chosen and the page is saved while holding a per-logbook lock,
+        // so two simultaneous posts cannot receive the same number (see below).
         // Construct Content
         $subject = trim($_POST['log_subject'] ?? ''); 
         $type = trim($_POST['log_type'] ?? 'General');
@@ -898,25 +992,38 @@ function elog_handle_actions() {
         $content .= "====== " . $subject . " ======\n\n";
         $content .= $content_body;
 
+        $lock_id = $conf['datadir'] . '/' . utf8_encodeFN(str_replace(':', '/', $ns)) . '/.elog_new_entry';
+        io_lock($lock_id);
+        $entry_num = elog_next_entry_number($ns);
+        $page_id = $ns . ':' . $entry_num;
         saveWikiText($page_id, $content, "New Log Entry");
+        clearstatcache();
+        $saved = page_exists($page_id);
+        io_unlock($lock_id);
+        if (!$saved) {
+            // The save was refused (for example by the elogguard plugin); do not store attachments.
+            return;
+        }
 
         // Handle Images (Creation)
-        elog_handle_image_upload($page_id, ($max_id + 1));
+        elog_handle_image_upload($page_id, $entry_num);
 
         // Rename TEMP_ ROOT files to permanent names
-        elog_rename_temp_root_files($page_id, ($max_id + 1));
+        elog_rename_temp_root_files($page_id, $entry_num);
 
         send_redirect(wl($page_id, '', true, '&'));
     }
     
     // 4. Save Edited Log
     if ($do == 'edit_save') {
+        if (!elog_can_edit_entries()) {
+            msg('Existing entries can only be changed by an administrator. Use Reply to add a correction.', -1);
+            return;
+        }
         if (!checkSecurityToken()) return;
-        
-        $real_id = trim($_POST['real_id'] ?? '');
+
+        $real_id = cleanID(trim($_POST['real_id'] ?? ''));
         if (empty($real_id) || !page_exists($real_id)) return;
-        
-        if (auth_quickaclcheck($real_id) < AUTH_EDIT) return;
         
         // Construct Content (Duplicated logic, kept simple)
         $subject = trim($_POST['log_subject'] ?? ''); 
@@ -993,9 +1100,20 @@ function elog_handle_actions() {
             exit;
         }
 
-        $ns = trim($_POST['ns'] ?? '');
+        // cleanID() removes path elements such as "../" so the upload stays inside the media directory.
+        $ns = cleanID(trim($_POST['ns'] ?? ''));
         if (empty($ns)) {
             echo json_encode(['success' => false, 'error' => 'No namespace']);
+            exit;
+        }
+        if (!elog_can_post($ns)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Not allowed']);
+            exit;
+        }
+        if (!checkSecurityToken()) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Invalid security token']);
             exit;
         }
 
@@ -1011,7 +1129,7 @@ function elog_handle_actions() {
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
         $clean_name = cleanID($filename);
-        $temp_name = 'temp_' . time() . '_' . $clean_name;
+        $temp_name = 'temp_' . elog_temp_user_key() . '_' . time() . '_' . $clean_name;
         $target_path = $upload_dir . '/' . $temp_name;
 
         if (move_uploaded_file($_FILES['root_file']['tmp_name'], $target_path)) {
@@ -1030,9 +1148,11 @@ function elog_handle_actions() {
  */
 function elog_handle_image_upload($page_id, $log_num) {
     global $conf;
+    $stored = 0;
     if (!empty($_FILES['log_images']['name'][0])) {
         $media_root = $conf['mediadir'];
-        $ns_dir = utf8_encodeFN(str_replace(':', '/', getNS($page_id)));
+        $ns = getNS($page_id);
+        $ns_dir = utf8_encodeFN(str_replace(':', '/', $ns));
         $upload_dir = $media_root . '/' . $ns_dir;
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
 
@@ -1042,12 +1162,31 @@ function elog_handle_image_upload($page_id, $log_num) {
                 $tmp_name = $_FILES['log_images']['tmp_name'][$i];
                 $name = basename($_FILES['log_images']['name'][$i]);
                 $name = cleanID($name);
+
+                // Accept only images and ROOT files, and only types that this wiki knows
+                // (conf/mime.conf and mime.local.conf).
+                list($ext, $known_mime) = mimetype($name);
+                $is_allowed = ($known_mime !== false)
+                    && (strpos((string)$known_mime, 'image/') === 0 || preg_match('/\.root$/i', $name));
+                if ($name === '' || !$is_allowed) {
+                    msg('Attachment rejected (file type not allowed): ' . hsc($name), -1);
+                    continue;
+                }
+
                 $target_name = $log_num . '_' . time() . '_' . $i . '_' . $name;
                 $target_path = $upload_dir . '/' . $target_name;
-                move_uploaded_file($tmp_name, $target_path);
+                if (!move_uploaded_file($tmp_name, $target_path)) continue;
+
+                // Record who added the file (visible in the media manager history).
+                clearstatcache(true, $target_path);
+                if (function_exists('addMediaLogEntry')) {
+                    addMediaLogEntry(time(), $ns . ':' . $target_name, DOKU_CHANGE_TYPE_CREATE, 'ELOG attachment of ' . $page_id, '', null, filesize($target_path));
+                }
+                $stored++;
             }
         }
     }
+    return $stored;
 }
 
 /**
@@ -1056,22 +1195,39 @@ function elog_handle_image_upload($page_id, $log_num) {
 function elog_rename_temp_root_files($page_id, $log_num) {
     global $conf;
     $media_root = $conf['mediadir'];
-    $ns_dir = utf8_encodeFN(str_replace(':', '/', getNS($page_id)));
+    $ns = getNS($page_id);
+    $ns_dir = utf8_encodeFN(str_replace(':', '/', $ns));
     $upload_dir = $media_root . '/' . $ns_dir;
 
     if (!is_dir($upload_dir)) return;
 
-    $files = scandir($upload_dir);
+    // Only the temporary files that this form uploaded (listed in root_temp_files) and that
+    // carry the current user's key are attached. Other users' uploads are left alone.
+    $listed = array_filter(array_map('trim', explode(',', (string)($_POST['root_temp_files'] ?? ''))));
+    $own_prefix = 'temp_' . elog_temp_user_key() . '_';
     $index = 0;
-    foreach ($files as $file) {
-        if (strpos($file, 'temp_') === 0 && preg_match('/\.root$/i', $file)) {
-            // Extract original filename from temp_{timestamp}_{cleanname}
-            $parts = explode('_', $file, 3);
-            $clean_name = isset($parts[2]) ? $parts[2] : $file;
-            $new_name = $log_num . '_' . time() . '_' . $index . '_' . $clean_name;
-            rename($upload_dir . '/' . $file, $upload_dir . '/' . $new_name);
+    foreach (array_unique($listed) as $file) {
+        $file = basename($file);
+        if (strpos($file, $own_prefix) !== 0 || !preg_match('/\.root$/i', $file)) continue;
+        if (!is_file($upload_dir . '/' . $file)) continue;
+
+        // temp_{userkey}_{timestamp}_{cleanname}
+        $parts = explode('_', $file, 4);
+        $clean_name = isset($parts[3]) ? $parts[3] : $file;
+        $new_name = $log_num . '_' . time() . '_' . $index . '_' . $clean_name;
+        if (rename($upload_dir . '/' . $file, $upload_dir . '/' . $new_name)) {
+            if (function_exists('addMediaLogEntry')) {
+                addMediaLogEntry(time(), $ns . ':' . $new_name, DOKU_CHANGE_TYPE_CREATE, 'ELOG attachment of ' . $page_id, '', null, filesize($upload_dir . '/' . $new_name));
+            }
             $index++;
         }
+    }
+
+    // Remove abandoned temporary uploads (forms that were never saved) after 7 days.
+    foreach (scandir($upload_dir) as $file) {
+        if (strpos($file, 'temp_') !== 0 || !preg_match('/\.root$/i', $file)) continue;
+        $path = $upload_dir . '/' . $file;
+        if (is_file($path) && filemtime($path) < time() - 7 * 86400) @unlink($path);
     }
 }
 
@@ -1302,6 +1458,8 @@ function elog_render_log_form($ns, $categories, $tags, $mode='new', $data=[]) {
 
     // Hidden input for form submission
     echo '<input type="hidden" name="root_plots" id="root_plots_hidden" value="' . hsc($data['root_plots'] ?? '') . '">';
+    // Temporary ROOT files uploaded by this form; only these are attached when the entry is saved.
+    echo '<input type="hidden" name="root_temp_files" id="root_temp_files_hidden" value="">';
     echo '</div>';
 
     // Content (Markdown Editor)
@@ -1590,6 +1748,8 @@ function elog_render_log_form($ns, $categories, $tags, $mode='new', $data=[]) {
                     statusEl.textContent = file.name + ' uploaded.';
                     statusEl.className = 'ms-2 small text-success';
                     rootFileMap[file.name] = {tempName: data.temp_name, url: data.url};
+                    var tempListEl = document.getElementById('root_temp_files_hidden');
+                    tempListEl.value = tempListEl.value ? (tempListEl.value + ',' + data.temp_name) : data.temp_name;
 
                     // Load JSROOT and browse the file
                     loadJSROOTAndBrowse(file.name, data.url);
@@ -1784,6 +1944,35 @@ EOT;
 
 function elog_render_newlog_form($ns, $categories, $tags) {
     elog_render_log_form($ns, $categories, $tags, 'new');
+}
+
+/**
+ * Render the "Add Attachment" form for an existing entry.
+ * It only adds files; the entry text cannot be changed here.
+ */
+function elog_render_attach_form($id) {
+    $subject = p_get_metadata($id, 'title');
+    if (empty($subject)) $subject = noNS($id);
+
+    echo '<div class="card shadow-sm">';
+    echo '<div class="card-header bg-primary text-white">Add Attachment</div>';
+    echo '<div class="card-body">';
+    echo '<p class="mb-3">Entry #' . hsc(noNS($id)) . ': <strong>' . hsc($subject) . '</strong></p>';
+    echo '<form action="' . wl($id) . '" method="post" enctype="multipart/form-data">';
+    echo '<input type="hidden" name="do" value="attach_save" />';
+    echo '<input type="hidden" name="real_id" value="' . hsc($id) . '" />';
+    echo '<input type="hidden" name="sectok" value="' . getSecurityToken() . '" />';
+    echo '<div class="mb-3">';
+    echo '<label for="attach_files" class="form-label fw-bold">Files (images or .root)</label>';
+    echo '<input type="file" class="form-control" name="log_images[]" id="attach_files" multiple accept="image/*,.root" required>';
+    echo '<div class="form-text">Files are added to the entry. The entry text is not changed. Added files can only be removed by an administrator.</div>';
+    echo '</div>';
+    echo '<div class="d-flex justify-content-between">';
+    echo '<a href="' . wl($id) . '" class="btn btn-secondary">Cancel</a>';
+    echo '<button type="submit" class="btn btn-primary">Add Attachment</button>';
+    echo '</div>';
+    echo '</form>';
+    echo '</div></div>';
 }
 
 /**
